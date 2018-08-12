@@ -51,6 +51,8 @@ public class Main {
                 args = Constants.COMMA_SPLIT_PATTERN.split(config);
             }
             
+            //先注释
+            args=new String[0];
             final List<Container> containers = new ArrayList<Container>();
             for (int i = 0; i < args.length; i ++) {
                 containers.add(loader.getExtension(args[i]));
