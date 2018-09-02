@@ -452,8 +452,8 @@ public class ExtensionLoader<T> {
                     instance = cachedAdaptiveInstance.get();
                     if (instance == null) {
                         try {
-                            instance = createAdaptiveExtension();
-                            cachedAdaptiveInstance.set(instance);
+                            instance = createAdaptiveExtension();//传入的类如果是一个Protocol对象，这里就是生成了一个Protocol$Adpter代理类，并将其交给IOC（见：/soa-other-dubbo-adpative/src/main/java/com/alibaba/dubbo/rpc/Protocol$Adpative.java）
+                            cachedAdaptiveInstance.set(instance);//将生成的Protocal$Adpater代理类缓存起来
                         } catch (Throwable t) {
                             createAdaptiveInstanceError = t;
                             throw new IllegalStateException("fail to create adaptive instance: " + t.toString(), t);
@@ -523,7 +523,7 @@ public class ExtensionLoader<T> {
     private T injectExtension(T instance) {
         try {
             if (objectFactory != null) {
-                for (Method method : instance.getClass().getMethods()) {
+                for (Method method : instance.getClass().getMethods()) {//有set方法时才注入，例如：com.alibaba.dubbo.rpc.proxy.javassist.JavassistProxyFactory[注：该类也是动态生成的]中setProtocol(Protocol protocol)
                     if (method.getName().startsWith("set")
                             && method.getParameterTypes().length == 1
                             && Modifier.isPublic(method.getModifiers())) {
@@ -532,7 +532,7 @@ public class ExtensionLoader<T> {
                             String property = method.getName().length() > 3 ? method.getName().substring(3, 4).toLowerCase() + method.getName().substring(4) : "";
                             Object object = objectFactory.getExtension(pt, property);
                             if (object != null) {
-                                method.invoke(instance, object);
+                                method.invoke(instance, object);//将程序自动生成的类注入到spi管理的instance对象中，值为object
                             }
                         } catch (Exception e) {
                             logger.error("fail to inject via method " + method.getName()
